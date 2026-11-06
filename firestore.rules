@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: encounters
+    // Document ID: auto-generated
+    // Fields:
+    //   - userId: string (required) - ID of the user who created the encounter
+    //   - patientName: string (required)
+    //   - patientId: string (required)
+    //   - date: string (required) - ISO 8601 date string
+    //   - provider: string (required)
+    //   - location: string (required)
+    //   - cptCode: string (required)
+    //   - totalCharges: number (required)
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+       return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+       return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isDocOwner() {
+       return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+    
+    function uidUnchanged() {
+       return !('userId' in request.resource.data) ||
+         request.resource.data.userId == request.auth.uid;
+    }
+    
+    function uidNotModified() {
+       return !('userId' in request.resource.data) ||
+         request.resource.data.userId == resource.data.userId;
+    }
+    
+    function hasRequiredFields(fields) {
+       return request.resource.data.keys().hasAll(fields);
+    }
+    
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string &&
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    // Domain Validators
+    function isValidEncounter(data) {
+      return hasOnlyAllowedFields(['userId', 'patientName', 'patientId', 'date', 'provider', 'location', 'cptCode', 'totalCharges', 'createdAt']) &&
+             data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
+             data.patientName is string && data.patientName.size() > 0 && data.patientName.size() < 100 &&
+             data.patientId is string && data.patientId.size() > 0 && data.patientId.size() < 50 &&
+             isValidDateString(data.date) &&
+             data.provider is string && data.provider.size() > 0 && data.provider.size() < 100 &&
+             data.location is string && data.location.size() > 0 && data.location.size() < 100 &&
+             data.cptCode is string && data.cptCode.size() > 0 && data.cptCode.size() < 20 &&
+             data.totalCharges is number && data.totalCharges >= 0 &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidAppointment(data) {
+      return (hasOnlyAllowedFields(['userId', 'patientName', 'patientId', 'time', 'ampm', 'room', 'reason', 'status', 'createdAt', 'clinicalNotes']) ||
+              hasOnlyAllowedFields(['userId', 'patientName', 'patientId', 'time', 'ampm', 'room', 'reason', 'status', 'createdAt'])) &&
+             data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
+             data.patientName is string && data.patientName.size() > 0 && data.patientName.size() < 100 &&
+             data.patientId is string && data.patientId.size() > 0 && data.patientId.size() < 50 &&
+             data.time is string && data.time.size() > 0 && data.time.size() < 20 &&
+             data.ampm in ['AM', 'PM'] &&
+             data.room is string && data.room.size() > 0 && data.room.size() < 50 &&
+             data.reason is string && data.reason.size() > 0 && data.reason.size() < 300 &&
+             data.status in ['NEXT_PATIENT', 'WAITING', 'COMPLETED'] &&
+             (!('clinicalNotes' in data) || (data.clinicalNotes is string && data.clinicalNotes.size() <= 2000)) &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidPatient(data) {
+      return (hasOnlyAllowedFields(['userId', 'name', 'dob', 'gender', 'patientId', 'phone', 'allergies', 'medicalHistory', 'createdAt']) ||
+              hasOnlyAllowedFields(['userId', 'name', 'dob', 'gender', 'patientId', 'phone', 'createdAt']) ||
+              hasOnlyAllowedFields(['userId', 'name', 'dob', 'patientId', 'createdAt'])) &&
+             data.userId is string && data.userId.size() > 0 && data.userId.size() < 100 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.dob is string && data.dob.size() > 0 && data.dob.size() < 50 &&
+             data.patientId is string && data.patientId.size() > 0 && data.patientId.size() < 50 &&
+             (!('gender' in data) || (data.gender is string && data.gender.size() <= 30)) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 50)) &&
+             (!('allergies' in data) || (data.allergies is string && data.allergies.size() <= 500)) &&
+             (!('medicalHistory' in data) || (data.medicalHistory is string && data.medicalHistory.size() <= 2000)) &&
+             data.createdAt is timestamp;
+    }
+
+    match /encounters/{encounterId} {
+      allow read: if isAuthenticated() && isDocOwner();
+      allow create: if isAuthenticated() && uidUnchanged() && isValidEncounter(request.resource.data);
+      allow update: if isAuthenticated() && isDocOwner() && uidNotModified() && isValidEncounter(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAuthenticated() && isDocOwner();
+    }
+
+    match /appointments/{appointmentId} {
+      allow read: if isAuthenticated() && isDocOwner();
+      allow create: if isAuthenticated() && uidUnchanged() && isValidAppointment(request.resource.data);
+      allow update: if isAuthenticated() && isDocOwner() && uidNotModified() && isValidAppointment(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAuthenticated() && isDocOwner();
+    }
+
+    match /patients/{patientId} {
+      allow read: if isAuthenticated() && isDocOwner();
+      allow create: if isAuthenticated() && uidUnchanged() && isValidPatient(request.resource.data);
+      allow update: if isAuthenticated() && isDocOwner() && uidNotModified() && isValidPatient(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAuthenticated() && isDocOwner();
+    }
+  }
+}

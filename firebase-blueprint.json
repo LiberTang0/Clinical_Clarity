@@ -1,0 +1,141 @@
+{
+  "entities": {
+    "Encounter": {
+      "title": "Encounter",
+      "description": "A medical encounter record",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who created the encounter"
+        },
+        "patientName": {
+          "type": "string"
+        },
+        "patientId": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "cptCode": {
+          "type": "string"
+        },
+        "totalCharges": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["userId", "patientName", "patientId", "date", "provider", "location", "cptCode", "totalCharges", "createdAt"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "A scheduled doctor visit",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the doctor who scheduled the visit"
+        },
+        "patientName": {
+          "type": "string"
+        },
+        "patientId": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string"
+        },
+        "ampm": {
+          "type": "string",
+          "enum": ["AM", "PM"]
+        },
+        "room": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["NEXT_PATIENT", "WAITING", "COMPLETED"]
+        },
+        "clinicalNotes": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["userId", "patientName", "patientId", "time", "ampm", "room", "reason", "status", "createdAt"]
+    },
+    "Patient": {
+      "title": "Patient",
+      "description": "A patient record in the clinic database",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the doctor or staff who registered the patient"
+        },
+        "name": {
+          "type": "string"
+        },
+        "dob": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "string"
+        },
+        "patientId": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "allergies": {
+          "type": "string"
+        },
+        "medicalHistory": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["userId", "name", "dob", "patientId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/encounters/{encounterId}": {
+      "schema": {
+        "$ref": "#/entities/Encounter"
+      },
+      "description": "Collection of medical encounters"
+    },
+    "/appointments/{appointmentId}": {
+      "schema": {
+        "$ref": "#/entities/Appointment"
+      },
+      "description": "Collection of scheduled doctor visits"
+    },
+    "/patients/{patientId}": {
+      "schema": {
+        "$ref": "#/entities/Patient"
+      },
+      "description": "Collection of registered clinical patients"
+    }
+  }
+}

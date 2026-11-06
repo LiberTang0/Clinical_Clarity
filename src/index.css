@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@300;400;600;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-headline: "Overpass", sans-serif;
+  --font-body: "Overpass", sans-serif;
+  --font-label: "IBM Plex Mono", monospace;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --color-primary: #0041c8;
+  --color-primary-container: #0055ff;
+  --color-on-primary: #ffffff;
+  --color-on-primary-fixed: #001551;
+  --color-primary-fixed: #dce1ff;
+  
+  --color-secondary: #575d78;
+  --color-secondary-container: #d8defe;
+  --color-on-secondary-container: #5b617d;
+  
+  --color-tertiary: #972500;
+  --color-tertiary-container: #c13301;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-fixed: #ffdbd1;
+  --color-on-tertiary-fixed-variant: #872100;
+
+  --color-surface: #faf8ff;
+  --color-surface-dim: #d3d9f8;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f3f2ff;
+  --color-surface-container: #ebedff;
+  --color-surface-container-high: #e3e7ff;
+  --color-surface-container-highest: #dce1ff;
+  --color-on-surface: #141a32;
+  --color-on-surface-variant: #434656;
+  
+  --color-background: #faf8ff;
+  --color-on-background: #141a32;
+  
+  --color-outline: #737688;
+  --color-outline-variant: #c3c5d9;
+  
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-background);
+  color: var(--color-on-background);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono-data {
+  font-family: var(--font-mono);
+}
+

@@ -1,0 +1,6 @@
+{
+  "name": "Clinical Clarity",
+  "description": "Ambient medical recording and SOAP note generation app.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
